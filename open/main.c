@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 void usage(char* prog_name) {
     printf("Opens file\n");
@@ -42,15 +43,17 @@ void print_open_flags(int flags)
         return -1;
     }
 
-    if (append_flag_to_str(&buf_cur, buf_end, &flags, "O_WRONLY", O_WRONLY) < 0)
+    bool wronly = !append_flag_to_str(&buf_cur, buf_end, &flags, "O_WRONLY", O_WRONLY);
+    bool rdwr = !append_flag_to_str(&buf_cur, buf_end, &flags, "O_RDWR", O_RDWR);
+
+    if (!wronly && !rdwr)
     {
-        // O_RDONLY is a very special flag, it is 0 (aka 'not O_WRONLY')
+        // O_RDONLY is a very special flag, it is 0 (aka 'not O_WRONLY and not O_RDWR')
         int written = snprintf(buf_cur, buf_end - buf_cur, "%s ", "O_RDONLY");
         assert(written != -1);
-        buf_cur += written; 
+        buf_cur += written;
     }
 
-    append_flag_to_str(&buf_cur, buf_end, &flags, "O_RDWR",        O_RDWR);
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_ACCMODE",     O_ACCMODE);
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_CREAT",       O_CREAT);
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_EXCL",        O_EXCL);
@@ -70,7 +73,7 @@ void print_open_flags(int flags)
     {
         append_flag_to_str(&buf_cur, buf_end, &flags, "O_DIRECTORY",   O_DIRECTORY);
     }
-    
+
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_NOFOLLOW",    O_NOFOLLOW);
     append_flag_to_str(&buf_cur, buf_end, &flags, "__O_NOATIME",   __O_NOATIME);
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_CLOEXEC",     O_CLOEXEC);
@@ -90,6 +93,47 @@ void print_mode(mode_t mode)
     printf("mode: 0%03o\n", mode);
 }
 
+void print_flags_map()
+{
+    void print_flag(const char* name, int val)
+    {
+        printf("%-14s0x%x\n", name, val);
+    }
+
+    print_flag("O_RDONLY"    , O_RDONLY);
+    print_flag("O_WRONLY"    , O_WRONLY);
+    print_flag("O_RDWR"      , O_RDWR);
+    print_flag("O_ACCMODE"   , O_ACCMODE);
+    print_flag("O_CREAT"     , O_CREAT);
+    print_flag("O_EXCL"      , O_EXCL);
+    print_flag("O_NOCTTY"    , O_NOCTTY);
+    print_flag("O_TRUNC"     , O_TRUNC);
+    print_flag("O_APPEND"    , O_APPEND);
+    print_flag("O_NONBLOCK"  , O_NONBLOCK);
+    print_flag("O_DSYNC"     , O_DSYNC);
+    print_flag("O_ASYNC"     , O_ASYNC);
+#ifdef O_DIRECT
+    print_flag("O_DIRECT"	   , O_DIRECT);
+#endif
+    print_flag("__O_LARGEFILE", __O_LARGEFILE);
+#ifdef O_LARGEFILE
+    print_flag("O_LARGEFILE" , O_LARGEFILE);
+#endif
+    print_flag("O_DIRECTORY" , O_DIRECTORY);
+    print_flag("O_NOFOLLOW"  , O_NOFOLLOW);
+#ifdef O_NOATIME
+    print_flag("O_NOATIME"   , O_NOATIME);
+#endif
+    print_flag("O_CLOEXEC"   , O_CLOEXEC);
+    print_flag("O_SYNC"      , O_SYNC);
+#ifdef O_PATH
+    print_flag("O_PATH"      , O_PATH);
+#endif
+#ifdef O_TMPFILE
+    print_flag("O_TMPFILE"   , O_TMPFILE);
+#endif
+}
+
 int main(int argc, char** argv)
 {
     if (argc < 2)
@@ -106,11 +150,23 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    int flags = O_CLOEXEC | O_WRONLY | __O_TMPFILE | 1 << 4;
+    print_flags_map();
+    // int flags = 0x20002;
+    int flags = O_RDWR | O_RDONLY;
     print_open_flags(flags);
 
     mode_t mode = S_IWGRP | S_IXUSR;
     print_mode(mode);
+
+    int fd = open(file_path, flags, mode);
+    if (fd == -1)
+    {
+        perror("Open failed");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("File is opened. Press any key to finish\n");
+    getchar();
 
     exit(EXIT_SUCCESS);
 }
