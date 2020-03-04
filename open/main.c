@@ -16,6 +16,7 @@ void print_open_flags(int flags)
 {
     char* buf_cur = malloc(1024);
     assert(buf_cur);
+    printf("Interpretation of open flags 0x%x\n", flags);
 
     const char* buf_begin = buf_cur;
     const char* buf_end = &buf_cur[1024];
@@ -54,6 +55,7 @@ void print_open_flags(int flags)
         buf_cur += written;
     }
 
+    append_flag_to_str(&buf_cur, buf_end, &flags, "O_SYNC",        O_SYNC);
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_ACCMODE",     O_ACCMODE);
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_CREAT",       O_CREAT);
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_EXCL",        O_EXCL);
@@ -77,7 +79,6 @@ void print_open_flags(int flags)
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_NOFOLLOW",    O_NOFOLLOW);
     append_flag_to_str(&buf_cur, buf_end, &flags, "__O_NOATIME",   __O_NOATIME);
     append_flag_to_str(&buf_cur, buf_end, &flags, "O_CLOEXEC",     O_CLOEXEC);
-    append_flag_to_str(&buf_cur, buf_end, &flags, "O_SYNC",        O_SYNC);
     append_flag_to_str(&buf_cur, buf_end, &flags, "__O_PATH",      __O_PATH);
 
     printf("flags: %s\n", buf_begin);
@@ -95,6 +96,7 @@ void print_mode(mode_t mode)
 
 void print_flags_map()
 {
+    printf("Known flags map:\n");
     void print_flag(const char* name, int val)
     {
         printf("%-14s0x%x\n", name, val);
@@ -132,6 +134,7 @@ void print_flags_map()
 #ifdef O_TMPFILE
     print_flag("O_TMPFILE"   , O_TMPFILE);
 #endif
+    printf("\n");
 }
 
 int main(int argc, char** argv)
@@ -152,7 +155,7 @@ int main(int argc, char** argv)
 
     print_flags_map();
     // int flags = 0x20002;
-    int flags = O_RDWR | O_RDONLY;
+    int flags = 0x1210c2;
     print_open_flags(flags);
 
     mode_t mode = S_IWGRP | S_IXUSR;
