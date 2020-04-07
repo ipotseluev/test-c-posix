@@ -9,7 +9,7 @@
 
 void usage(char* prog_name) {
     printf("Opens file\n");
-    printf("Usage: %s DIR\n", prog_name);
+    printf("Usage: %s FLAGS_HEX FILE\n", prog_name);
 }
 
 void print_open_flags(int flags)
