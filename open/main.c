@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <errno.h>
 
 void usage(char* prog_name) {
     printf("Opens file\n");
@@ -145,18 +146,23 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    const char *file_path = argv[1];
-    if (access(file_path, F_OK))
+    int flags = strtol(argv[1], NULL, 16);
+    if (errno)
+    {
+        perror("Invalid flags");
+        exit(EXIT_FAILURE);
+    }
+
+    print_flags_map();
+    print_open_flags(flags);
+    
+    const char *file_path = argv[2];
+    if (!(flags & O_CREAT) && access(file_path, F_OK))
     {
         perror(file_path);
         usage(argv[0]);
         exit(EXIT_FAILURE);
     }
-
-    print_flags_map();
-    // int flags = 0x20002;
-    int flags = 0x1210c2;
-    print_open_flags(flags);
 
     mode_t mode = S_IWGRP | S_IXUSR;
     print_mode(mode);
