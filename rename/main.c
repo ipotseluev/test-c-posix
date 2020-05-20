@@ -1,17 +1,19 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 
-int usage(char* prog, int retcode)
+int usage(char* prog)
 {
     printf("Renames files or directories\n");
     printf("Usage: %s OLDPATH NEWPATH\n", prog);
-    return retcode;
 }
 
 int main(int argc, char** argv)
 {
     if (argc < 3)
     {
-        return usage(argv[0], -1);
+        usage(argv[0]);
+        exit(EXIT_FAILURE);
     }
 
     const char* oldpath = argv[1];
@@ -21,6 +23,7 @@ int main(int argc, char** argv)
     if (ret)
     {
         perror("rename");
+        exit(errno);
     }
-    return 0;
+    exit(EXIT_SUCCESS);
 }
