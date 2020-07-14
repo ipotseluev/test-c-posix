@@ -37,7 +37,6 @@ int posix_compliant_readdir(char* dir_path)
         return -1;
     }
 
-
     struct dirent* direntry = readdir(dirp);
     while (direntry != NULL)
     {
@@ -47,9 +46,13 @@ int posix_compliant_readdir(char* dir_path)
         direntry = readdir(dirp);
     }
 
+    long pos = telldir(dirp);
+    printf("End, Position: %ld\n", pos);
+
     closedir(dirp);
 
     close(fd);
+    return 0;
 }
 
 int main(int argc, char** argv)
